@@ -12,6 +12,8 @@ declare class IPFS extends EventEmitter {
 
     types: IPFS.Types;
 
+    static create(options?: IPFS.Options): Promise<IPFS>
+
     init(options: IPFS.InitOptions, callback: Callback<boolean>): void;
     init(callback: Callback<boolean>): void;
 
