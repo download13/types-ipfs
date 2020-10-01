@@ -11,5 +11,9 @@
   "author": "Zohaib Rauf",
   "maintainer": "Beeno Tung",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^14.11.2",
+    "cids": "^1.0.1"
+  }
 }

@@ -3,16 +3,18 @@
         "module": "commonjs",
         "lib": [
             "es6",
-            "dom"
+            "dom",
+            "esnext.asynciterable"
         ],
         "noImplicitAny": true,
         "noImplicitThis": true,
         "strictNullChecks": false,
+        "esModuleInterop": true,
         "baseUrl": "../",
         "typeRoots": [
             "../"
         ],
-        "types": [],
+        "types": [ "node" ],
         "noEmit": true,
         "forceConsistentCasingInFileNames": true
     },

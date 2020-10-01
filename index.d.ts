@@ -5,8 +5,10 @@ export = IPFS;
 
 type Callback<T> = (error: Error, result?: T) => void;
 
-import { EventEmitter } from "events";
-    
+import type { EventEmitter } from 'events'
+
+import type CID from 'cids'
+
 declare class IPFS extends EventEmitter {
     constructor(options: IPFS.Options);
 
@@ -51,43 +53,28 @@ declare class IPFS extends EventEmitter {
     pin: any;
 
     // Top level Files API
-    add(data: IPFS.FileContent, options: any, callback: Callback<IPFS.IPFSFile[]>): void;
-    add(data: IPFS.FileContent, options: any): Promise<IPFS.IPFSFile[]>;
-    add(data: IPFS.FileContent, callback: Callback<IPFS.IPFSFile[]>): void;
-    add(data: IPFS.FileContent): Promise<IPFS.IPFSFile[]>;
+    //add(data: IPFS.FileContent, options: any, callback: Callback<IPFS.IPFSFile[]>): void;
+    add(data: IPFS.FileContent | IPFS.FileObject, options: any): Promise<IPFS.UnixFSEntry>
+    addAll(source: IPFS.FileStream, options: any): AsyncIterable<IPFS.UnixFSEntry>
 
-    addFromStream(stream: any, options?: any): Promise<IPFS.IPFSFile[]>
-    addFromStream(stream: any, callback: Callback<IPFS.IPFSFile[]>): void;
-    addFromStream(stream: any, options: any, callback: Callback<IPFS.IPFSFile[]>): void;
+    cat(ipfsPath: string | CID, options: {
+        offset?: number
+        length?: number
+        timeout?: number
+        signal?: AbortSignal
+    }): AsyncIterable<Buffer>;
 
-    addFromUrl(url: string, options: any, callback: Callback<IPFS.IPFSFile[]>): void;
-    addFromUrl(url: string, options: any): Promise<IPFS.IPFSFile[]>;
-    addFromUrl(url: string, callback: Callback<IPFS.IPFSFile[]>): void;
-    addFromUrl(url: string): Promise<IPFS.IPFSFile[]>;
+    get(ipfsPath: string | CID, options: {
+        timeout?: number
+        signal?: AbortSignal
+    }): AsyncIterable<{
+        path: string
+        content: AsyncIterable<Uint8Array>
+        mode: number
+        mtime: { secs: number, nsecs: number }
+    }>
 
-    addFromFs(path: string, options: any, callback: Callback<IPFS.IPFSFile[]>): void;
-    addFromFs(path: string, options: any): Promise<IPFS.IPFSFile[]>;
-    addFromFs(path: string, callback: Callback<IPFS.IPFSFile[]>): void;
-    addFromFs(path: string): Promise<IPFS.IPFSFile[]>;
-
-    addPullStream(options?: any): any;
-    addReadableStream(options?: any): any;
-
-    cat(hash: IPFS.Multihash, callback: Callback<IPFS.FileContent>): void;
-    cat(hash: IPFS.Multihash, options: any, callback: Callback<IPFS.FileContent>): void;
-    cat(hash: IPFS.Multihash, options?: any): Promise<IPFS.FileContent>;
-    catPullStream(hash: IPFS.Multihash, options?: any): any;
-    catReadableStream(hash: IPFS.Multihash, options?: any): any;
-
-    get(hash: IPFS.Multihash, callback: Callback<IPFS.IPFSFile[]>): void;
-    get(hash: IPFS.Multihash): Promise<IPFS.IPFSFile[]>;
-    getPullStream(hash: IPFS.Multihash): any;
-    getReadableStream(hash: IPFS.Multihash): any;
-
-    ls(hash: IPFS.Multihash): Promise<IPFS.IPFSFileInfo[]>;
-    lsPullStream(hash: IPFS.Multihash): any;
-    lsReadableStream(hash: IPFS.Multihash): any;
-
+    ls(ipfsPath: string | CID): AsyncIterable<IPFS.IPFSFileInfo>;
 }
 
 declare namespace IPFS {
@@ -111,7 +98,6 @@ declare namespace IPFS {
     }
 
     export type Multihash = any | string;
-    export type CID = any;
 
     export interface Types {
         Buffer: any;
@@ -146,21 +132,40 @@ declare namespace IPFS {
         path(): string;
     }
 
-    export type FileContent = Object | Blob | string;
+    export type FileContent = Uint8Array | Blob | String | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array> | ReadableStream<Uint8Array>
 
-    export interface IPFSFile {
-        path: string;
-        hash: string;
-        size: number;
+    export interface FileObject {
+        path?: string;
+        mode?: number | string;
+        mtime?: UnixTime;
         content?: FileContent;
     }
+
+    export type FileStream = Iterable<FileContent|FileObject> | AsyncIterable<FileContent|FileObject> | ReadableStream<FileContent|FileObject>
+
+    type UnixTime = Date | UnixTimeObj | number[]
+
+    export interface UnixTimeObj {
+        secs: number // the number of seconds since (positive) or before (negative) the Unix Epoch began
+        nsecs?: number // the number of nanoseconds since the last full second.
+    }
+
+    export interface UnixFSEntry {
+        path: string
+        cid: CID
+        mode: number
+        mtime: UnixTimeObj
+        size: number
+    }
     export interface IPFSFileInfo {
-        path: string;
-        hash: string;
-        size: number;
-        name: string;
-        depth: number;
-        type: 'file' | 'dir' | string;
+        depth: number
+        name: string
+        path: string
+        size: number
+        cid: CID
+        type: 'file'
+        mode: number
+        mtime: UnixTimeObj
     }
 
     export interface FilesAPI {
