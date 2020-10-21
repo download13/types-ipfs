@@ -40,11 +40,7 @@ export default class IPFS extends EventEmitter {
     bitswap: any;
     pubsub: any;
     dht: any;
-
-    pin: {
-        add(ipfsPath: string | CID, options?: any): unknown
-        rm(ipfsPath: string | CID, options?: any): unknown
-    }
+    pin: PinAPI
 }
 
 
@@ -259,4 +255,16 @@ interface DagAPI {
     tree(cid: string | CID, path: string): Promise<any>;
     tree(cid: string | CID, options: any): Promise<any>;
     tree(cid: string | CID): Promise<any>;
+}
+
+interface PinOptions {
+    recursive?: boolean
+    timeout?: number
+    signal?: AbortSignal
+}
+
+interface PinAPI {
+    add(ipfsPath: string | CID, options?: PinOptions): CID
+
+    rm(ipfsPath: string | CID, options?: PinOptions): CID
 }
